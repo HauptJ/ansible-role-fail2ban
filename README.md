@@ -1,18 +1,14 @@
-fail2ban
-=========
-
-<img src="https://docs.ansible.com/ansible-tower/3.2.4/html_ja/installandreference/_static/images/logo_invert.png" width="10%" height="10%" alt="Ansible logo" align="right"/>
-<a href="https://travis-ci.org/robertdebock/ansible-role-fail2ban"><img src="https://travis-ci.org/robertdebock/ansible-role-fail2ban.svg?branch=master" alt="Build status" align="left"/></a>
+# fail2ban
 
 Install and configure fail2ban on your system.
 
-<img src="https://img.shields.io/ansible/role/d/22987"/>
-<img src="https://img.shields.io/ansible/quality/22987"/>
+|Travis|GitHub|Quality|Downloads|
+|------|------|-------|---------|
+|[![travis](https://travis-ci.com/robertdebock/ansible-role-fail2ban.svg?branch=master)](https://travis-ci.com/robertdebock/ansible-role-fail2ban)|[![github](https://github.com/robertdebock/ansible-role-fail2ban/workflows/Ansible%20Molecule/badge.svg)](https://github.com/robertdebock/ansible-role-fail2ban/actions)|[![quality](https://img.shields.io/ansible/quality/22987)](https://galaxy.ansible.com/robertdebock/fail2ban)|[![downloads](https://img.shields.io/ansible/role/d/22987)](https://galaxy.ansible.com/robertdebock/fail2ban)|
 
-Example Playbook
-----------------
+## Example Playbook
 
-This example is taken from `molecule/resources/playbook.yml`:
+This example is taken from `molecule/resources/converge.yml` and is tested on each push, pull request and release.
 ```yaml
 ---
 - name: Converge
@@ -21,10 +17,10 @@ This example is taken from `molecule/resources/playbook.yml`:
   gather_facts: yes
 
   roles:
-    - robertdebock.fail2ban
+    - role: robertdebock.fail2ban
 ```
 
-The machine you are running this on, may need to be prepared.
+The machine may need to be prepared using `molecule/resources/prepare.yml`:
 ```yaml
 ---
 - name: Prepare
@@ -33,14 +29,26 @@ The machine you are running this on, may need to be prepared.
   become: yes
 
   roles:
-    - robertdebock.bootstrap
-    - robertdebock.epel
+    - role: robertdebock.bootstrap
+    - role: robertdebock.epel
+```
+
+For verification `molecule/resources/verify.yml` run after the role has been applied.
+```yaml
+---
+- name: Verify
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: check if connection still works
+      ping:
 ```
 
 Also see a [full explanation and example](https://robertdebock.nl/how-to-use-these-roles.html) on how to use these roles.
 
-Role Variables
---------------
+## Role Variables
 
 These variables are set in `defaults/main.yml`:
 ```yaml
@@ -56,11 +64,20 @@ fail2ban_bantime: 10m
 fail2ban_findtime: 10m
 fail2ban_maxretry: 5
 fail2ban_destemail: root@localhost
-fail2ban_sender: root@{{ ansible_fqdn}}
+fail2ban_sender: root@{{ ansible_fqdn }}
+
+fail2ban_configuration: []
+#  - option: loglevel
+#    value: "INFO"
+#    section: Definition
+
+fail2ban_jail_configuration: []
+#  - option: ignoreself
+#    value: "true"
+#    section: DEFAULT
 ```
 
-Requirements
-------------
+## Requirements
 
 - Access to a repository containing packages, likely on the internet.
 - A recent version of Ansible. (Tests run on the current, previous and next release of Ansible.)
@@ -74,51 +91,44 @@ The following roles can be installed to ensure all requirements are met, using `
 
 ```
 
-Context
--------
+## Context
 
 This role is a part of many compatible roles. Have a look at [the documentation of these roles](https://robertdebock.nl/) for further information.
 
 Here is an overview of related roles:
 ![dependencies](https://raw.githubusercontent.com/robertdebock/drawings/artifacts/fail2ban.png "Dependency")
 
-
-Compatibility
--------------
+## Compatibility
 
 This role has been tested on these [container images](https://hub.docker.com/):
 
-|container|tag|allow_failures|
-|---------|---|--------------|
-|alpine|latest|no|
-|alpine|edge|yes|
-|debian|stable|yes|
-|debian|unstable|yes|
-|debian|latest|no|
-|centos|7|no|
-|centos|latest|no|
-|fedora|latest|no|
-|fedora|rawhide|yes|
-|opensuse|latest|no|
-|ubuntu|rolling|yes|
-|ubuntu|devel|yes|
-|ubuntu|latest|no|
+|container|tags|
+|---------|----|
+|debian|all|
+|el|7, 8|
+|fedora|all|
+|opensuse|all|
+|ubuntu|bionic|
 
-This role has been tested on these Ansible versions:
+The minimum version of Ansible required is 2.8 but tests have been done to:
 
-- ansible~=2.8
-- ansible~=2.9
-- git+https://github.com/ansible/ansible.git@devel
+- The previous version, on version lower.
+- The current version.
+- The development version.
 
-The indicator '\~=' means [compatible with](https://www.python.org/dev/peps/pep-0440/#compatible-release). For example 'ansible\~=2.8' would pick the latest ansible-2.8, for example ansible-2.8.6.
+## Exceptions
 
+Some variarations of the build matrix do not work. These are the variations and reasons why the build won't work:
+
+| variation                 | reason                 |
+|---------------------------|------------------------|
+| alpine | Service `fail2ban' needs non existent service `logger' |
+| amazonlinux:1 | file /etc/ethertypes conflicts between attempted installs of ebtables-2.0.10-16.amzn2.x86_64 and iptables-1.8.2-16.amzn2.0.1.x86_64 |
 
 
+## Testing
 
-Testing
--------
-
-[Unit tests](https://travis-ci.org/robertdebock/ansible-role-fail2ban) are done on every commit, pull request, release and periodically.
+[Unit tests](https://travis-ci.com/robertdebock/ansible-role-fail2ban) are done on every commit, pull request, release and periodically.
 
 If you find issues, please register them in [GitHub](https://github.com/robertdebock/ansible-role-fail2ban/issues)
 
@@ -150,24 +160,11 @@ image="centos" tox
 image="debian" tag="stable" tox
 ```
 
-Modules
--------
-
-This role uses the following modules:
-```yaml
----
-- ini_file
-- package
-- service
-```
-
-License
--------
+## License
 
 Apache-2.0
 
 
-Author Information
-------------------
+## Author Information
 
 [Robert de Bock](https://robertdebock.nl/)
